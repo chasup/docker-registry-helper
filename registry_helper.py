@@ -27,8 +27,9 @@ def print_error_response(resp):
 
 
 class ImageReference:
-    def __init__(self, image_reference: str, allow_insecure: bool = False):
+    def __init__(self, image_reference: str, allow_insecure: bool = False, use_http: bool = False):
         self._allow_insecure = allow_insecure
+        self._use_http = use_http
 
         repository = ""
         tag = None
@@ -81,7 +82,7 @@ class ImageReference:
     @property
     def scheme(self) -> str:
         # If we allow insecure try http first
-        if self._allow_insecure:
+        if self._use_http:
             return "http://"
         return "https://"
 
@@ -308,9 +309,13 @@ def run() -> None:
     parser.add_argument("--password",
                         help="Repository password, will use REGISTRY_PASSWORD from environment if not supplied",
                         default=None)
+    parser.add_argument("--use-http",
+                        action="store_true",
+                        help="Will use HTTP access to the registry",
+                        default=False)
     parser.add_argument("--allow-insecure",
                         action="store_true",
-                        help="Will try HTTP access to the registry before HTTPS and ignore certificate errors",
+                        help="Will ignore any certificate errors when using HTTPS to talk to the registry",
                         default=False)
 
     subparsers = parser.add_subparsers(dest="command")
