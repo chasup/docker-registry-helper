@@ -55,6 +55,11 @@ class ImageReference:
         self._tag = tag
         self._digest = digest
 
+        # Disable warnings if allow_insecure
+        if allow_insecure:
+            import urllib3
+            urllib3.disable_warnings()
+
     @property
     def registry(self) -> str:
         return self._registry
@@ -329,11 +334,11 @@ def run() -> None:
     args = parser.parse_args()
 
     if args.command == 'list':
-        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure)
+        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure, use_http=args.use_http)
         auth = Auth(image_ref, username=args.username, password=args.password)
         ListCommand(image_ref, auth).invoke()
     elif args.command == 'save':
-        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure)
+        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure, use_http=args.use_http)
         auth = Auth(image_ref, username=args.username, password=args.password)
         SaveCommand(image_ref, auth).invoke()
 
