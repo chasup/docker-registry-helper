@@ -27,8 +27,9 @@ def print_error_response(resp):
 
 
 class ImageReference:
-    def __init__(self, image_reference: str, allow_insecure: bool = False):
+    def __init__(self, image_reference: str, allow_insecure: bool = False, use_http: bool = False):
         self._allow_insecure = allow_insecure
+        self._use_http = use_http
 
         repository = ""
         tag = None
@@ -53,6 +54,11 @@ class ImageReference:
         self._image = repository + image
         self._tag = tag
         self._digest = digest
+
+        # Disable warnings if allow_insecure
+        if allow_insecure:
+            import urllib3
+            urllib3.disable_warnings()
 
     @property
     def registry(self) -> str:
@@ -81,7 +87,7 @@ class ImageReference:
     @property
     def scheme(self) -> str:
         # If we allow insecure try http first
-        if self._allow_insecure:
+        if self._use_http:
             return "http://"
         return "https://"
 
@@ -308,9 +314,13 @@ def run() -> None:
     parser.add_argument("--password",
                         help="Repository password, will use REGISTRY_PASSWORD from environment if not supplied",
                         default=None)
+    parser.add_argument("--use-http",
+                        action="store_true",
+                        help="Will use HTTP access to the registry",
+                        default=False)
     parser.add_argument("--allow-insecure",
                         action="store_true",
-                        help="Will try HTTP access to the registry before HTTPS and ignore certificate errors",
+                        help="Will ignore any certificate errors when using HTTPS to talk to the registry",
                         default=False)
 
     subparsers = parser.add_subparsers(dest="command")
@@ -324,11 +334,11 @@ def run() -> None:
     args = parser.parse_args()
 
     if args.command == 'list':
-        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure)
+        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure, use_http=args.use_http)
         auth = Auth(image_ref, username=args.username, password=args.password)
         ListCommand(image_ref, auth).invoke()
     elif args.command == 'save':
-        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure)
+        image_ref = ImageReference(args.image_reference, allow_insecure=args.allow_insecure, use_http=args.use_http)
         auth = Auth(image_ref, username=args.username, password=args.password)
         SaveCommand(image_ref, auth).invoke()
 
