@@ -11,6 +11,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Proxies
+
+This script uses the Python [requests](https://pypi.org/project/requests/) module and honours proxy environment variables as
+per the [documentation](https://requests.readthedocs.io/en/latest/user/advanced/#proxies).
+
 ### Usage
 
 ```shell
